@@ -68,8 +68,21 @@ export default function Home() {
     Array(questions.length).fill(null)
   );
   const [correctQuestionsCount, setCorrectQuestionsCount] = useState<number>(0);
+  const [testStartDate, setTestStartDate] = useState<Date>();
+  const [testEndDate, setTestEndDate] = useState<Date>();
+
+  const getNowDateTime = () => {
+    return new Date();
+  };
 
   const handleAnswerSelect = (questionIndex: number, answerIndex: number) => {
+    const answeredQuestions = selectedAnswers.filter(
+      (answer) => answer !== null
+    ).length;
+    if (answeredQuestions === 0) {
+      setTestStartDate(getNowDateTime);
+    }
+
     if (isFinishedTest) {
       return;
     }
@@ -80,6 +93,7 @@ export default function Home() {
   };
 
   const handleCheckAnswers = () => {
+    setTestEndDate(getNowDateTime);
     setIsFinishedTest(true);
     setShowAnswers(true);
 
@@ -121,12 +135,20 @@ export default function Home() {
     );
 
     if (correctPercent >= 70 && correctPercent < 80) {
-      return "Cê tá bem hein?? Aprovado!! :D";
+      return "Cê tá bem hein?? Aprovado (a)!! :D";
     } else if (correctPercent >= 80) {
-      return "Cê tá voando, cara!! Aprovadaço!! :D";
+      return "Cê tá voando!! Aprovadaço (a)!! :D";
     } else {
-      return "Aprovado!! :D";
+      return "Aprovada(a)!! :D";
     }
+  };
+
+  const getTotalTestTime = (startDate: any, endDate: any) => {
+    var diffInMillisec = Math.abs(startDate - endDate);
+
+    var diffInMinutes = Math.floor(diffInMillisec / (1000 * 60));
+
+    return diffInMinutes;
   };
   return (
     <div className="p-16 max-w-2xl mx-auto px-4">
@@ -197,7 +219,7 @@ export default function Home() {
             60 ? (
               <h3 className={` text-green-500`}>{getAprovationMessage()}</h3>
             ) : (
-              <h3 className="text-red-500">Reprovado! :&apos;(</h3>
+              <h3 className="text-red-500">Reprovado(a)! :&apos;(</h3>
             )}{" "}
             <span className="text-gray-600">
               {getCorrectPercent(
@@ -214,6 +236,10 @@ export default function Home() {
           <div className="text-red-400">
             <strong>Respostas erradas: </strong>
             <span>{questions.length - Number(correctQuestionsCount)}</span>
+          </div>
+          <div className="text-gray-600">
+            <strong>Tempo de teste: </strong>
+            <span>{getTotalTestTime(testStartDate, testEndDate)} minutos</span>
           </div>
         </div>
       )}
