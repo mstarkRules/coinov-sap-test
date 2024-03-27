@@ -5,7 +5,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 const questions = [
   {
-    questionText: "What is the capital of France?",
+    questionText:
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries?",
     answerOptions: [
       { answerText: "New York", isCorrect: false },
       { answerText: "London", isCorrect: false },
@@ -49,6 +50,15 @@ const questions = [
       { answerText: "7", isCorrect: true },
     ],
   },
+  {
+    questionText: "How many Harry Potter books are there?",
+    answerOptions: [
+      { answerText: "1", isCorrect: false },
+      { answerText: "4", isCorrect: true },
+      { answerText: "6", isCorrect: false },
+      { answerText: "7", isCorrect: false },
+    ],
+  },
 ];
 
 export default function Home() {
@@ -57,8 +67,9 @@ export default function Home() {
   const [selectedAnswers, setSelectedAnswers] = useState(
     Array(questions.length).fill(null)
   );
+  const [correctQuestionsCount, setCorrectQuestionsCount] = useState<number>(0);
 
-  const handleAnswerSelect = (questionIndex, answerIndex) => {
+  const handleAnswerSelect = (questionIndex: number, answerIndex: number) => {
     if (isFinishedTest) {
       return;
     }
@@ -71,14 +82,58 @@ export default function Home() {
   const handleCheckAnswers = () => {
     setIsFinishedTest(true);
     setShowAnswers(true);
+
+    let correctAnswersCount = 0;
+
+    const questionsLength = questions.length;
+
+    const correctTestAnswers = questions.map((question, index) =>
+      question.answerOptions.findIndex((option) => option.isCorrect)
+    );
+
+    selectedAnswers.forEach((selectedAnswer, index) => {
+      if (selectedAnswer === correctTestAnswers[index]) {
+        correctAnswersCount += 1;
+      }
+    });
+
+    setCorrectQuestionsCount(correctAnswersCount);
+
     console.log("selected answers: ", selectedAnswers);
+    console.log("correct count: ", correctAnswersCount);
+  };
+  const handleResetTest = () => {
+    setIsFinishedTest(false);
+    setShowAnswers(false);
+    setSelectedAnswers([]);
+    console.log("selected answers: ", selectedAnswers);
+  };
+
+  const getCorrectPercent = (correctCount: number, totalQuestions: number) => {
+    const percent = (correctCount * 100) / totalQuestions;
+    return percent;
+  };
+
+  const getAprovationMessage = () => {
+    const correctPercent = getCorrectPercent(
+      correctQuestionsCount,
+      questions.length
+    );
+
+    if (correctPercent >= 70 && correctPercent < 80) {
+      return "Cê tá bem hein?? Aprovado!! :D";
+    } else if (correctPercent >= 80) {
+      return "Cê tá voando, cara!! Aprovadaço!! :D";
+    } else {
+      return "Aprovado!! :D";
+    }
   };
   return (
     <div className="p-16 max-w-2xl mx-auto px-4">
       <div className="items-start justify-between sm:flex">
         <div>
           <h4 className="text-gray-800 text-xl font-semibold">
-            Coinov SAP Test Simulator
+            Coinov SAP Test Simulator - {questions.length} questions
           </h4>
           <p className="mt-2 text-gray-600 text-base sm:text-sm">
             You will receive a email with the test results. Its a joke
@@ -116,7 +171,7 @@ export default function Home() {
                           selectedAnswers[idx] !== null &&
                           selectedAnswers[idx] === index &&
                           !item.answerOptions[index].isCorrect && (
-                            <p className="text-sm m-0 p-0 text-red-600">
+                            <p className="font-bold text-sm m-0 p-0 text-red-600">
                               Errado, calabreso!
                             </p>
                           )}
@@ -134,12 +189,48 @@ export default function Home() {
           </li>
         ))}
       </ul>
-      <button
-        className="mt-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        onClick={handleCheckAnswers}
-      >
-        Checar respostas
-      </button>
+
+      {isFinishedTest && (
+        <div className=" py-2 text-base ">
+          <div className="pb-3 font-bold text-lg">
+            {getCorrectPercent(correctQuestionsCount, questions.length) >=
+            60 ? (
+              <h3 className={` text-green-500`}>{getAprovationMessage()}</h3>
+            ) : (
+              <h3 className="text-red-500">Reprovado! :&apos;(</h3>
+            )}{" "}
+            <span className="text-gray-600">
+              {getCorrectPercent(
+                correctQuestionsCount,
+                questions.length
+              ).toFixed(2)}
+              % de acerto
+            </span>
+          </div>
+          <div className="text-green-500">
+            <strong>Respostas corretas: </strong>
+            <span>{correctQuestionsCount}</span>
+          </div>
+          <div className="text-red-400">
+            <strong>Respostas erradas: </strong>
+            <span>{questions.length - Number(correctQuestionsCount)}</span>
+          </div>
+        </div>
+      )}
+      <div className="flex flex-row gap-x-2">
+        <button
+          className="mt-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={handleCheckAnswers}
+        >
+          Checar respostas
+        </button>
+        <button
+          className="mt-6 border  text-gray-600 font-bold py-2 px-4 rounded"
+          onClick={handleResetTest}
+        >
+          Resetar teste
+        </button>
+      </div>
     </div>
   );
 }
